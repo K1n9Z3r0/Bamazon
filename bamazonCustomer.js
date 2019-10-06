@@ -1,19 +1,12 @@
-//=================================Setup Required Variables===============================
-
 var Table = require('cli-table');
 var mysql = require('mysql');
 var inquirer = require('inquirer');
 
-//=================================Connect to SQL database===============================
 
 var connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
-
-    // Your username
     user: "root",
-
-    // Your password
     password: "",
     database: "bamazon_db"
 });
@@ -24,7 +17,6 @@ connection.connect(function(err) {
     startPrompt();
 });
 
-//=================================Inquirer introduction===============================
 
 function startPrompt() {
 
@@ -46,7 +38,6 @@ function startPrompt() {
     });
 }
 
-//=================================Inventory===============================
 
 function inventory() {
 
@@ -73,11 +64,7 @@ function inventory() {
 
                 );
             }
-            // console.log("");
-            // console.log("====================================================== Current Bamazon Inventory ======================================================");
-            // console.log("");
             console.log(table.toString());
-            // console.log("");
             continuePrompt();
         });
     }
@@ -96,12 +83,12 @@ function continuePrompt() {
         if (user.continue === true) {
             selectionPrompt();
         } else {
-            console.log("Thank you.");
+            console.log("Not buying? Lets try this again...");
+            startPrompt();
         }
     });
 }
 
-//=================================Item selection and Quantity desired===============================
 
 function selectionPrompt() {
 
@@ -119,7 +106,6 @@ function selectionPrompt() {
         }
     ]).then(function(userPurchase) {
 
-        //connect to database to find stock_quantity in database. If user quantity input is greater than stock, decline purchase.
 
         connection.query("SELECT * FROM products WHERE item_id=?", userPurchase.inputId, function(err, res) {
             for (var i = 0; i < res.length; i++) {
@@ -130,7 +116,6 @@ function selectionPrompt() {
                     startPrompt();
 
                 } else {
-                    //list item information for user for confirm prompt
                     console.log("You've selected:");
                     console.log("Item: " + res[i].product_name);
                     console.log("Department: " + res[i].department_name);
@@ -142,7 +127,6 @@ function selectionPrompt() {
 
                     var newStock = (res[i].stock_quantity - userPurchase.inputNumber);
                     var purchaseId = (userPurchase.inputId);
-                    //console.log(newStock);
                     confirmPrompt(newStock, purchaseId);
                 }
             }
@@ -150,7 +134,6 @@ function selectionPrompt() {
     });
 }
 
-//=================================Confirm Purchase===============================
 
 function confirmPrompt(newStock, purchaseId) {
 
@@ -164,7 +147,6 @@ function confirmPrompt(newStock, purchaseId) {
     }]).then(function(userConfirm) {
         if (userConfirm.confirmPurchase === true) {
 
-            //if user confirms purchase, update mysql database with new stock quantity by subtracting user quantity purchased.
 
             connection.query("UPDATE products SET ? WHERE ?", [{
                 stock_quantity: newStock
@@ -172,11 +154,11 @@ function confirmPrompt(newStock, purchaseId) {
                 item_id: purchaseId
             }], function(err, res) {});
 
-            console.log("Transaction completed. Thank you.");
+            console.log("Thanks for buying! Now go buy more!.");
             startPrompt();
         } else {
 
-            console.log("Come Again!");
+            console.log("Changed your mind? Choose something else!");
             startPrompt();
         }
     });
