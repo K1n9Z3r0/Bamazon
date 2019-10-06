@@ -34,12 +34,14 @@ function startPrompt() {
         name: "confirm",
         message: "Would you like to view our inventory?",
         default: true
+    }])
 
-    }]).then(function(user) {
+    .then(function(user) {
         if (user.confirm === true) {
             inventory();
         } else {
-            console.log("Thank you!");
+            console.log("Nice try but, There is no escape! Now buy something...");
+            startPrompt();
         }
     });
 }
@@ -48,17 +50,13 @@ function startPrompt() {
 
 function inventory() {
 
-    // instantiate
     var table = new Table({
         head: ['ID#', 'Item Name', 'Department', 'Price', 'Stock Quantity']
     });
 
     listInventory();
 
-    // table is an Array, so you can `push`, `unshift`, `splice` and friends
     function listInventory() {
-
-        //Variable creation from DB connection
 
         connection.query("SELECT * FROM products", function(err, res) {
             for (var i = 0; i < res.length; i++) {
@@ -71,15 +69,19 @@ function inventory() {
 
                 table.push(
                     [itemId, productName, departmentName, price, stockQuantity]
+
+
                 );
             }
-
+            // console.log("");
+            // console.log("====================================================== Current Bamazon Inventory ======================================================");
+            // console.log("");
             console.log(table.toString());
+            // console.log("");
+            continuePrompt();
         });
     }
 }
-
-//=================================Inquirer user purchase===============================
 
 function continuePrompt() {
 
